@@ -4,16 +4,6 @@ const router = require('express').Router()
 
 const storage = { data: [] }
 
-const findById = (request, response, next) => {
-  request.data = {}
-  request.data.object = storage.data.find((item, index) => {
-    request.data.index = index
-    return item.id === request.params.id
-  })
-  if (!request.data.object) return response.status(404).json({ error: 'object not found' })
-  return next()
-}
-
 router.get('/', (request, response) =>
   response.status(200).json(storage))
 
@@ -29,10 +19,20 @@ router.post('/', (request, response) => {
   return response.status(201).json(object)
 })
 
-router.get('/:id', findById, (request, response) => 
+router.use('/:id', (request, response, next) => {
+  request.data = {}
+  request.data.object = storage.data.find((item, index) => {
+    request.data.index = index
+    return item.id === request.params.id
+  })
+  if (!request.data.object) return response.status(404).json({ error: 'object not found' })
+  return next()
+})
+
+router.get('/:id', (request, response) => 
   response.status(200).json(request.data.object))
 
-router.put('/:id', findById, (request, response) =>
+router.put('/:id', (request, response) =>
   response.status(200).json(storage.data[request.data.index] = {
     ...cloneDeep(request.body),
     id: request.params.id,
@@ -40,7 +40,7 @@ router.put('/:id', findById, (request, response) =>
     updated_at: new Date(),
   }))
 
-router.delete('/:id', findById, (request, response) => {
+router.delete('/:id', (request, response) => {
   const actual = cloneDeep(request.data.object)
   const filtered = storage.data.filter(item => item.id !== actual.id)
   storage.data = filtered
