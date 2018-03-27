@@ -12,4 +12,4 @@ app.use((error, request, response, next) =>
     message: error.message
   }))
 
-app.listen(3000, () => console.log('server up!'))
+app.listen(3000, () => console.log('server up on http://localhost:3000'))
